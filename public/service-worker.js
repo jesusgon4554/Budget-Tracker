@@ -1,5 +1,6 @@
 const CACHE_NAME = "static-cache-v2";
 const DATA_CACHE_NAME = "data-cache-v1";
+const RUNTIME_CACHE = "runtime-cache";
 
 const iconSizes = ["72", "96", "128", "144", "152", "192", "384", "512"];
 const FILES_TO_PRE_CACHE = [
@@ -17,7 +18,7 @@ self.addEventListener("install", function(evt) {
     evt.waitUntil(
       caches.open(CACHE_NAME).then(cache => {
         console.log("Your files were pre-cached successfully!");
-        return cache.addAll(staticFilesToPreCache);
+        return cache.addAll(FILES_TO_PRE_CACHE);
       })
     );
   
@@ -66,7 +67,7 @@ self.addEventListener("install", function(evt) {
     } else {
       // respond from static cache, request is not for /api/*
       evt.respondWith(
-        caches.open(CACHE_NAME).then(cache => {
+        caches.open(DATA_CACHE_NAME).then(cache => {
           return cache.match(evt.request).then(response => {
             return response || fetch(evt.request);
           });
