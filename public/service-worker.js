@@ -1,3 +1,5 @@
+const e = require("express");
+
 const CACHE_NAME = "static-cache-v2";
 const DATA_CACHE_NAME = "data-cache-v1";
 const RUNTIME_CACHE = "runtime-cache";
@@ -46,7 +48,7 @@ self.addEventListener("install", function(evt) {
   // fetch
   self.addEventListener("fetch", function(evt) {
     const {url} = evt.request;
-    if (url.includes("/all") || url.includes("/find")) {
+    if (evt.request.url.includes("/api/")){
       evt.respondWith(
         caches.open(DATA_CACHE_NAME).then(cache => {
           return fetch(evt.request)
@@ -64,15 +66,18 @@ self.addEventListener("install", function(evt) {
             });
         }).catch(err => console.log(err))
       );
-    } else {
+    } 
       // respond from static cache, request is not for /api/*
       evt.respondWith(
-        caches.open(DATA_CACHE_NAME).then(cache => {
-          return cache.match(evt.request).then(response => {
-            return response || fetch(evt.request);
+       fetch(evt.request).catch(() => {
+          return caches.match(evt.request).then(response => {
+            if(response){
+              return response;
+            }else if(evt.request.headers.get("accept").includes("text/html")){
+              return caches.match("/");
+            }
           });
         })
       );
-    }
   });
   
